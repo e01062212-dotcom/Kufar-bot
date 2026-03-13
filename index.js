@@ -39,8 +39,25 @@ function saveSeenAds() {
     fs.writeFileSync(SEEN_ADS_FILE, JSON.stringify([...seenAds]));
 }
 
-const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
+// СОЗДАЁМ БОТА С ПРИНУДИТЕЛЬНЫМ СБРОСОМ
+const bot = new TelegramBot(TELEGRAM_TOKEN, { 
+    polling: {
+        interval: 300,
+        autoStart: true,
+        params: {
+            timeout: 10
+        }
+    }
+});
 
+// Принудительно удаляем все старые подключения
+bot.deleteWebHook().then(() => {
+    console.log('✅ Старые вебхуки удалены');
+}).catch(err => {
+    console.log('❌ Ошибка удаления вебхуков:', err.message);
+});
+
+// Команда /start
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
     
@@ -62,6 +79,7 @@ bot.onText(/\/start/, async (msg) => {
     );
 });
 
+// Добавление телефона
 bot.onText(/\/add|📱 Добавить телефон/, async (msg) => {
     const chatId = msg.chat.id;
     
@@ -93,6 +111,7 @@ bot.onText(/\/add|📱 Добавить телефон/, async (msg) => {
     });
 });
 
+// Список отслеживаемых
 bot.onText(/\/list|📋 Список/, async (msg) => {
     const chatId = msg.chat.id;
     
@@ -109,6 +128,7 @@ bot.onText(/\/list|📋 Список/, async (msg) => {
     await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
 });
 
+// Удаление телефона
 bot.onText(/\/remove|❌ Удалить телефон/, async (msg) => {
     const chatId = msg.chat.id;
     
@@ -139,6 +159,7 @@ bot.onText(/\/remove|❌ Удалить телефон/, async (msg) => {
     });
 });
 
+// Помощь
 bot.onText(/\/help|ℹ️ Помощь/, async (msg) => {
     const chatId = msg.chat.id;
     
@@ -152,6 +173,7 @@ bot.onText(/\/help|ℹ️ Помощь/, async (msg) => {
     );
 });
 
+// Функция проверки Kufar
 async function checkKufar() {
     if (trackedItems.length === 0) return;
     
