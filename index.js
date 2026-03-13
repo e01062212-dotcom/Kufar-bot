@@ -73,7 +73,7 @@ bot.onText(/\/start/, async (msg) => {
     
     await bot.sendMessage(
         chatId,
-        '👋 Привет! Я помогу отслеживать новые объявления на Kufar\n\n' +
+        '👋 Привет! Я помогу отслеживать новые объявления на Kufar по всей Беларуси\n\n' +
         '📱 Нажми "Добавить телефон", чтобы начать',
         keyboard
     );
@@ -85,7 +85,7 @@ bot.onText(/\/add|📱 Добавить телефон/, async (msg) => {
     
     await bot.sendMessage(
         chatId,
-        '📱 Напиши название телефона:\nНапример: *iPhone 13*',
+        '📱 Напиши название телефона:\nНапример: *iPhone 13*\n\nИскать буду по всей Беларуси',
         { parse_mode: 'Markdown' }
     );
     
@@ -97,7 +97,8 @@ bot.onText(/\/add|📱 Добавить телефон/, async (msg) => {
         trackedItems.push({
             id: Date.now().toString(),
             name: itemName,
-            url: `https://re.kufar.by/l/r/minsk?query=${encodeURIComponent(itemName)}`,
+            // ===== ИЗМЕНЕНО: теперь без /minsk/ = поиск по всей Беларуси =====
+            url: `https://re.kufar.by/l/r?query=${encodeURIComponent(itemName)}`,
             dateAdded: new Date().toISOString()
         });
         
@@ -105,7 +106,7 @@ bot.onText(/\/add|📱 Добавить телефон/, async (msg) => {
         
         await bot.sendMessage(
             chatId,
-            `✅ Теперь отслеживаю: *${itemName}*`,
+            `✅ Теперь отслеживаю *${itemName}* по всей Беларуси`,
             { parse_mode: 'Markdown' }
         );
     });
@@ -167,8 +168,9 @@ bot.onText(/\/help|ℹ️ Помощь/, async (msg) => {
         chatId,
         'ℹ️ *Как пользоваться:*\n\n' +
         '1️⃣ Нажми "Добавить телефон"\n' +
-        '2️⃣ Напиши название\n' +
-        '3️⃣ Жди уведомлений',
+        '2️⃣ Напиши название (например: iPhone 13)\n' +
+        '3️⃣ Бот ищет по всей Беларуси\n' +
+        '4️⃣ Жди уведомлений о новых объявлениях',
         { parse_mode: 'Markdown' }
     );
 });
@@ -222,13 +224,13 @@ async function checkKufar() {
                 for (const ad of ads) {
                     if (!seenAds.has(ad.id)) {
                         const message = `
-🆕 <b>НОВОЕ!</b>
+🆕 <b>НОВОЕ ОБЪЯВЛЕНИЕ!</b>
 📱 <b>${item.name}</b>
 
 <b>${ad.title}</b>
 💰 ${ad.price}
 
-🔗 <a href="${ad.link}">Ссылка</a>
+🔗 <a href="${ad.link}">Открыть на Kufar</a>
                         `;
                         
                         await bot.sendMessage(YOUR_CHAT_ID, message, { parse_mode: 'HTML' });
@@ -238,7 +240,7 @@ async function checkKufar() {
                 }
                 
             } catch (error) {
-                console.log(`Ошибка: ${item.name}`, error.message);
+                console.log(`Ошибка при поиске ${item.name}:`, error.message);
             }
         }
         
@@ -251,8 +253,8 @@ async function checkKufar() {
     }
 }
 
-console.log('🚀 Бот запущен!');
-bot.sendMessage(YOUR_CHAT_ID, '✅ Бот запущен!\nНапиши /start');
+console.log('🚀 Бот запущен! Ищем по всей Беларуси');
+bot.sendMessage(YOUR_CHAT_ID, '✅ Бот запущен! Теперь ищу по всей Беларуси\nНапиши /start');
 
 setInterval(checkKufar, CHECK_INTERVAL);
 setTimeout(checkKufar, 5000);
